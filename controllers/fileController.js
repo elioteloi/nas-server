@@ -117,7 +117,72 @@ function fetchFile(req, res) {
   );
 }
 
+function updateFile(req, res) {
+  console.log(req.body.id);
+  console.log(req.body.name);
+
+  const fileId = req.body.id;
+  const newNameOfOriginalname = req.body.name;
+
+  connection.query(
+    "SELECT userdrive, filename, foldername FROM file WHERE id = ?;",
+    [fileId],
+    (err, result) => {
+      if (err) {
+        console.error("Error querying data from file.", err);
+        return res.status(500).json({
+          error: "Error querying data from file.",
+        });
+      } else {
+        console.log("the result", result[0]);
+
+        const uniqueSuffix = Date.now();
+
+        let newNameOfFilename =
+          uniqueSuffix +
+          "-" +
+          newNameOfOriginalname +
+          path.extname(result[0].filename);
+
+        let OldFilePath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/${result[0].foldername}/${result[0].filename}`;
+        let NewFilePath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/${result[0].foldername}/${newNameOfFilename}`;
+
+        console.log("oldFile", OldFilePath);
+        console.log("newFile", NewFilePath);
+
+        connection.query(
+          "UPDATE file SET filename = ?, originalname = ? WHERE id = ?;",
+          [newNameOfFilename, newNameOfOriginalname, fileId],
+          (err) => {
+            if (err) {
+              console.error("Error updating the name of the file.", err);
+              return res
+                .status(409)
+                .json({ error: "Error updating the name of the file." });
+            } else {
+              fs.rename(OldFilePath, NewFilePath, (err) => {
+                if (err) {
+                  console.error("Error renaming the file.", err);
+                  return res
+                    .status(500)
+                    .json({ error: "Error renaming the file." });
+                } else {
+                  console.log("File renamed successfully.");
+                  return res
+                    .status(200)
+                    .json({ message: "File renamed successfully." });
+                }
+              });
+            }
+          }
+        );
+      }
+    }
+  );
+}
+
 module.exports = {
   createFile,
   fetchFile,
+  updateFile,
 };
