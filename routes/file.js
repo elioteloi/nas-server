@@ -11,4 +11,6 @@ router.post(
 
 router.post("/fetchFile", fileController.fetchFile);
 
+router.put("/updateFile", fileController.updateFile);
+
 module.exports = router;
