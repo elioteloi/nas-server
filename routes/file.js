@@ -9,4 +9,6 @@ router.post(
   fileController.createFile
 );
 
+router.post("/fetchFile", fileController.fetchFile);
+
 module.exports = router;
