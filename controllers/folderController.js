@@ -62,4 +62,22 @@ function createFolder(req, res) {
   );
 }
 
-module.exports = { createFolder };
+function fetchFolder(req, res) {
+  const { id } = req.body;
+  connection.query(
+    "SELECT foldername FROM folder WHERE userid = ?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.error("Error querying the values in folder.", err);
+        return res
+          .status(500)
+          .json({ error: "Error querying the values in folder." });
+      } else {
+        res.status(200).json({ result });
+      }
+    }
+  );
+}
+
+module.exports = { createFolder, fetchFolder };
