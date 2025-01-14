@@ -181,8 +181,58 @@ function updateFile(req, res) {
   );
 }
 
+function deleteFile(req, res) {
+  console.log("request id user from frontend", req.params.id);
+
+  let fileId = req.params.id;
+  console.log("id file", fileId);
+
+  connection.query(
+    "SELECT userdrive, filename, foldername FROM file WHERE id = ?;",
+    [fileId],
+    (err, result) => {
+      if (err) {
+        console.error("Error querying data from file.", err);
+        return res.status(500).json({
+          error: "Error querying data from file.",
+        });
+      } else {
+        let OldFilePath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/${result[0].foldername}/${result[0].filename}`;
+        let NewFilePath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/bin/${result[0].filename}`;
+
+        connection.query(
+          "DELETE FROM file WHERE id = ? LIMIT 1;",
+          [fileId],
+          (err, result) => {
+            if (err) {
+              console.error("Error deleting file.", err);
+              return res.status(500).json({ error: "Error deleting file." });
+            } else {
+              console.log(result);
+              fs.rename(OldFilePath, NewFilePath, (err) => {
+                if (err) {
+                  console.error(err);
+                  return res
+                    .status(500)
+                    .json({ error: "Error deleting the file." });
+                } else {
+                  console.log("File deleted successfully.");
+                  return res
+                    .status(200)
+                    .json({ message: "File deleted successfully." });
+                }
+              });
+            }
+          }
+        );
+      }
+    }
+  );
+}
+
 module.exports = {
   createFile,
   fetchFile,
   updateFile,
+  deleteFile,
 };
