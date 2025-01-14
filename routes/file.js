@@ -13,4 +13,6 @@ router.post("/fetchFile", fileController.fetchFile);
 
 router.put("/updateFile", fileController.updateFile);
 
+router.delete("/deleteFile/:id", fileController.deleteFile);
+
 module.exports = router;
