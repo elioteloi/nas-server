@@ -94,6 +94,30 @@ function createFile(req, res) {
   }
 }
 
+function fetchFile(req, res) {
+  const userid = req.body.id;
+  const foldername = req.body.folder;
+  console.log("id fetch", userid);
+  console.log("folder fetch", foldername);
+
+  connection.query(
+    "SELECT id, userid, userdrive, originalname, filename, foldername FROM file WHERE userid = ? AND foldername = ?;",
+    [userid, foldername],
+    (err, result) => {
+      if (err) {
+        console.error("Error querying data from file.", err);
+        return res.status(500).json({
+          error: "Error querying data from file.",
+        });
+      } else {
+        console.log(result);
+        res.status(200).json({ result });
+      }
+    }
+  );
+}
+
 module.exports = {
   createFile,
+  fetchFile,
 };
