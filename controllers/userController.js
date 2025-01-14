@@ -115,4 +115,60 @@ function createUser(req, res) {
   }
 }
 
-module.exports = { createUser };
+function fetchUser(req, res) {
+  const { email } = req.body;
+
+  if (req.body.email === "" && req.body.password === "") {
+    console.log("There is nothing on the input.");
+    return res
+      .status(400)
+      .json({ errorInput: "There is nothing on the input." });
+  } else {
+    connection.query(
+      `SELECT id, email, password FROM users WHERE email = ? LIMIT 1;`,
+      [email],
+      (err, result) => {
+        if (err) {
+          console.error("Error querying user.", err);
+          return res.status(400).json({ message: "Error querying user." });
+        }
+
+        if (result.length === 1) {
+          console.log("id", result[0].id);
+
+          bcrypt.compare(
+            req.body.password,
+            result[0].password,
+            (err, resultOfBcrypt) => {
+              if (err) {
+                console.log("Error comparing password");
+              }
+
+              if (resultOfBcrypt) {
+                console.log("result", result);
+
+                console.log("its the same password.");
+                return res.status(200).json({
+                  success: true,
+                  redirectUrl: "home",
+                  id: result[0].id,
+                  user: email,
+                });
+              } else {
+                console.log("The password is incorrect.");
+                return res
+                  .status(401)
+                  .json({ errorPassword: "The password is incorrect." });
+              }
+            }
+          );
+        } else {
+          console.error("No account found.", err);
+          return res.status(404).json({ errorEmail: "No account found." });
+        }
+      }
+    );
+  }
+}
+
+module.exports = { createUser, fetchUser };
