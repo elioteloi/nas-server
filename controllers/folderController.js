@@ -80,4 +80,75 @@ function fetchFolder(req, res) {
   );
 }
 
-module.exports = { createFolder, fetchFolder };
+function updateFolder(req, res) {
+  const folderid = req.body.id;
+  const newFolderName = req.body.folderName;
+
+  connection.query(
+    "SELECT foldername FROM folder WHERE foldername =  ? LIMIT 1",
+    [newFolderName],
+    (err, result) => {
+      if (err) {
+        console.log("Error querying the values in folder.");
+        return res
+          .status(500)
+          .json({ error: "Error querying the values in folder." });
+      } else {
+        if (result.length === 0) {
+          connection.query(
+            "SELECT userdrive, foldername FROM folder WHERE id = ?",
+            [folderid],
+            (err, result) => {
+              if (err) {
+                console.error("Error querying the values in folder.", err);
+                return res
+                  .status(500)
+                  .json({ error: "Error querying the values in folder." });
+              } else {
+                let OldFolderPath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/${result[0].foldername}`;
+                let NewFolderPath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/${newFolderName}`;
+
+                connection.query(
+                  "UPDATE folder SET foldername = ?, path = ? where id = ?",
+                  [newFolderName, NewFolderPath, folderid],
+                  (err) => {
+                    if (err) {
+                      console.error("Error updating the name of folder.", err);
+                      return res
+                        .status(500)
+                        .json({ error: "Error updating the name of folder." });
+                    } else {
+                      fs.rename(OldFolderPath, NewFolderPath, (err) => {
+                        if (err) {
+                          console.error(
+                            "Error renaming the values in folder.",
+                            err
+                          );
+                          return res
+                            .status(500)
+                            .json({ error: "Error renaming the folder." });
+                        } else {
+                          console.log("Folder renamed successfully");
+                          res
+                            .status(200)
+                            .json({ message: "Folder renamed successfully." });
+                        }
+                      });
+                    }
+                  }
+                );
+              }
+            }
+          );
+        } else {
+          console.log("There is already a folder with this name.");
+          res
+            .status(409)
+            .json({ error: "There is already a folder with that name." });
+        }
+      }
+    }
+  );
+}
+
+module.exports = { createFolder, fetchFolder, updateFolder };
