@@ -6,4 +6,6 @@ router.post("/createFolder", folderController.createFolder);
 
 router.post("/fetchFolder", folderController.fetchFolder);
 
+router.put("/updateFolder", folderController.updateFolder);
+
 module.exports = router;
