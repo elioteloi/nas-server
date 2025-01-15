@@ -8,4 +8,6 @@ router.post("/fetchFolder", folderController.fetchFolder);
 
 router.put("/updateFolder", folderController.updateFolder);
 
+router.delete("/deleteFolder/:id", folderController.deleteFolder);
+
 module.exports = router;
