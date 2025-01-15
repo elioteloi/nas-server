@@ -151,4 +151,46 @@ function updateFolder(req, res) {
   );
 }
 
-module.exports = { createFolder, fetchFolder, updateFolder };
+function deleteFolder(req, res) {
+  const folderid = req.params.id;
+
+  connection.query(
+    "SELECT * FROM folder WHERE id = ?",
+    [folderid],
+    (err, result) => {
+      if (err) {
+      } else {
+        const OldFolderPath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/${result[0].foldername}`;
+        const NewFolderPath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/bin/${result[0].foldername}`;
+
+        fs.rename(OldFolderPath, NewFolderPath, (err) => {
+          if (err) {
+            console.log("Error deleting folder.", err);
+            res.status(500).json({ error: "Error deleting folder.", err });
+          } else {
+            connection.query(
+              "DELETE FROM folder WHERE id = ?",
+              [folderid],
+              (err) => {
+                if (err) {
+                  console.log("Error deleting folder from database", err);
+                  res.status(500).json({
+                    error: "Error deleting folder from database",
+                    err,
+                  });
+                } else {
+                  console.log("Folder deleted successfully.");
+                  res
+                    .status(200)
+                    .json({ message: "Folder deleted successfully." });
+                }
+              }
+            );
+          }
+        });
+      }
+    }
+  );
+}
+
+module.exports = { createFolder, fetchFolder, updateFolder, deleteFolder };
