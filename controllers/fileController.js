@@ -122,7 +122,7 @@ function updateFile(req, res) {
   console.log(req.body.name);
 
   const fileId = req.body.id;
-  const newNameOfOriginalname = req.body.name;
+  const newName = req.body.name;
 
   connection.query(
     "SELECT userdrive, filename, foldername FROM file WHERE id = ?;",
@@ -139,10 +139,9 @@ function updateFile(req, res) {
         const uniqueSuffix = Date.now();
 
         let newNameOfFilename =
-          uniqueSuffix +
-          "-" +
-          newNameOfOriginalname +
-          path.extname(result[0].filename);
+          uniqueSuffix + "-" + newName + path.extname(result[0].filename);
+
+        let newNameOfOriginalname = newName + path.extname(result[0].filename);
 
         let OldFilePath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/${result[0].foldername}/${result[0].filename}`;
         let NewFilePath = `${process.env.PATH_OF_DRIVE}/${result[0].userdrive}/${result[0].foldername}/${newNameOfFilename}`;
