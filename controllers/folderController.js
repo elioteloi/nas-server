@@ -65,7 +65,7 @@ function createFolder(req, res) {
 function fetchFolder(req, res) {
   const { id } = req.body;
   connection.query(
-    "SELECT foldername FROM folder WHERE userid = ?",
+    "SELECT id, foldername FROM folder WHERE userid = ?",
     [id],
     (err, result) => {
       if (err) {
@@ -87,14 +87,14 @@ function updateFolder(req, res) {
   connection.query(
     "SELECT foldername FROM folder WHERE foldername =  ? LIMIT 1",
     [newFolderName],
-    (err, result) => {
+    (err, resultFolderExits) => {
       if (err) {
         console.log("Error querying the values in folder.");
         return res
           .status(500)
           .json({ error: "Error querying the values in folder." });
       } else {
-        if (result.length === 0) {
+        if (resultFolderExits.length === 0) {
           connection.query(
             "SELECT userdrive, foldername FROM folder WHERE id = ?",
             [folderid],
