@@ -171,4 +171,75 @@ function fetchUser(req, res) {
   }
 }
 
-module.exports = { createUser, fetchUser };
+function updateUser(req, res) {
+  console.log(req.body.id);
+  console.log(req.body.password);
+
+  const userId = req.body.id;
+  const userPassword = req.body.password;
+  const newPassword = req.body.newPassword;
+
+  connection.query(
+    "SELECT * FROM users WHERE id = ?",
+    [userId],
+    (err, result) => {
+      if (err) {
+        console.log("Error querying user");
+        res.status(500).json({ error: "Error querying user" });
+      } else {
+        bcrypt.compare(
+          userPassword,
+          result[0].password,
+          (err, resultOfBcrypt) => {
+            if (err) {
+              console.log("Error decrypting password", err);
+              res.status(500).json({ error: "Error hashing password" });
+            } else {
+              if (resultOfBcrypt) {
+                bcrypt.genSalt(saltRounds, (err, salt) => {
+                  if (err) {
+                    console.log("Error generating salt");
+                    res.status(500).json({ error: "Error generating salt" });
+                  } else {
+                    bcrypt.hash(newPassword, salt, (err, hash) => {
+                      if (err) {
+                        console.log("Error hashing password");
+                        res
+                          .status(500)
+                          .json({ error: "Error hashing password" });
+                      } else {
+                        connection.query(
+                          "UPDATE users SET password = ? WHERE id = ?",
+                          [hash, userId],
+                          (err) => {
+                            if (err) {
+                              console.log("Error updating the password", err);
+                              res
+                                .status(500)
+                                .json({ error: "Error updating the password" });
+                            } else {
+                              console.log("password changed successfully");
+
+                              res.status(200).json({
+                                message: "password changed successfully",
+                              });
+                            }
+                          }
+                        );
+                      }
+                    });
+                  }
+                });
+              } else {
+                console.log("Password is not the same");
+                res.status(401).json({ error: "Password is not the same" });
+              }
+            }
+          }
+        );
+      }
+    }
+  );
+}
+
+module.exports = { createUser, fetchUser, updateUser };
